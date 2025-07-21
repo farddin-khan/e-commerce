@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ShopEase – Premium Shopping</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::file-selector-button {
+      @apply bg-indigo-600 text-white px-4 py-1 rounded hover:bg-indigo-700 transition;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body class="pt-20 bg-gradient-to-br from-indigo-50 to-purple-100 text-gray-800">
+
+  <!-- NAVBAR -->
+  <header class="bg-white shadow fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-indigo-700">ShopEase</h1>
+      <nav class="space-x-6 hidden sm:block">
+        <a href="#" onclick="goHome()" class="text-gray-700 hover:text-indigo-600 font-medium">Home</a>
+        <a href="#" onclick="goProducts()" class="text-gray-700 hover:text-indigo-600 font-medium">Products</a>
+        <a href="#" onclick="showCart()" class="text-gray-700 hover:text-indigo-600 font-medium">Cart</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <span id="nav-username" class="text-gray-700 font-semibold hidden sm:inline"></span>
+        <button onclick="logout()" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition hidden sm:inline">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="auth-section" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-700">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+      <h2 class="text-4xl font-extrabold text-indigo-700 mb-4">Shopping E-kart</h2>
+      <p class="text-gray-600 mb-6">Your modern online shopping experience</p>
+      <input id="username" type="text" placeholder="Enter your name"
+        class="w-full p-3 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 mb-4" />
+      <button onclick="login()" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-semibold transition">
+        Enter Store
+      </button>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="product-section" class="hidden px-6 py-10 max-w-7xl mx-auto">
+    <h2 class="text-4xl font-bold text-center mb-10 text-gray-800">🛒 Explore Our Products</h2>
+
+    <!-- ADD PRODUCT FORM -->
+    <div class="bg-white shadow-xl rounded-xl p-6 mb-12">
+      <h3 class="text-2xl font-semibold mb-4">➕ Add Product</h3>
+      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+        <input id="new-name" type="text" placeholder="Product Name" class="p-3 border rounded-lg w-full" />
+        <input id="new-price" type="number" placeholder="Price" class="p-3 border rounded-lg w-full" />
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
+        <input id="new-image" type="file" accept="image/*" class="p-2 border rounded-lg" onchange="previewImage(event)" />
+        <img id="preview" class="w-24 h-24 object-cover rounded-lg shadow hidden" />
+      </div>
+      <button onclick="addNewProduct()" class="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+        Add Product
+      </button>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div id="product-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+    <div class="text-center mt-10">
+      <button onclick="showCart()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold transition">
+        🧾 View Cart
+      </button>
+    </div>
+  </section>
+
+  <!-- CART -->
+  <section id="cart-section" class="hidden px-6 py-10 max-w-4xl mx-auto">
+    <div class="glass rounded-2xl shadow-xl p-6">
+      <h2 class="text-4xl font-bold text-center mb-8 text-white">🧾 Your Cart</h2>
+      <ul id="cart-items" class="space-y-4 mb-6 text-white"></ul>
+      <div id="total-price" class="text-right font-bold text-xl mb-6 text-white"></div>
+
+      <!-- PAYMENT METHOD -->
+      <div class="mb-6">
+        <label class="block mb-2 font-semibold text-white">Choose Payment Method</label>
+        <select id="payment-method" onchange="renderPaymentForm()" class="w-full border border-gray-300 p-3 rounded-lg">
+          <option value="">-- Select --</option>
+          <option value="netbanking">Net Banking</option>
+          <option value="upi">UPI</option>
+          <option value="card">Credit/Debit Card</option>
+        </select>
+      </div>
+
+      <div id="payment-form" class="space-y-4 text-white"></div>
+
+      <div class="text-center">
+        <button onclick="processPayment()" class="bg-indigo-700 text-white px-6 py-3 rounded-lg hover:bg-indigo-800 transition font-semibold">
+          💳 Complete Payment
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-center text-white bg-gray-900 py-5 mt-12">
+    <p class="text-sm">&copy; 2025 ShopEase | Crafted with ❤️ by Farddin Khan</p>
+  </footer>
+
+  <!-- JS SCRIPTS -->
+  <script>
+    const products = [
+      { name: "Cotton Tee", price: 499, image: "https://images.squarespace-cdn.com/content/v1/57c3b7ecb3db2b6d36105e34/1496379543570-OQG5P0OI39AWQ6CAGRJL/MuslinBag-1.JPG?format=1000w" },
+      { name: "Smartwatch", price: 1599, image: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?fit=crop&w=500&q=80" },
+      { name: "Running Shoes", price: 2199, image: "shows.webp" },
+      { name: "Bluetooth Headphones", price: 1299, image: "headphone.jpg" },
+      { name: "Leather Wallet", price: 899, image: "wallet.jpg" },
+    ];
+    const cart = [];
+
+    function login() {
+      const name = document.getElementById("username").value.trim();
+      if (name) {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("product-section").classList.remove("hidden");
+        document.getElementById("nav-username").textContent = `👋 Hello, ${name}`;
+        loadProducts();
+      } else {
+        alert("Please enter your name.");
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    function goHome() {
+      document.getElementById("product-section").classList.remove("hidden");
+      document.getElementById("cart-section").classList.add("hidden");
+    }
+
+    function goProducts() {
+      document.getElementById("product-section").classList.remove("hidden");
+      document.getElementById("cart-section").classList.add("hidden");
+    }
+
+    function loadProducts() {
+      const productList = document.getElementById("product-list");
+      productList.innerHTML = "";
+      products.forEach((product, index) => {
+        productList.innerHTML += `
+          <div class="bg-white p-5 rounded-xl shadow hover:shadow-2xl transition duration-300">
+            <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded-lg mb-4" />
+            <h3 class="text-xl font-bold mb-1 text-gray-800">${product.name}</h3>
+            <p class="text-gray-600 mb-3 font-medium">₹${product.price}</p>
+            <button onclick="addToCart(${index})"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+              Add to Cart
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function addToCart(index) {
+      cart.push(products[index]);
+      alert(`${products[index].name} added to cart`);
+    }
+
+    function showCart() {
+      document.getElementById("product-section").classList.add("hidden");
+      document.getElementById("cart-section").classList.remove("hidden");
+
+      const cartList = document.getElementById("cart-items");
+      const totalDisplay = document.getElementById("total-price");
+      cartList.innerHTML = "";
+      let total = 0;
+
+      if (cart.length === 0) {
+        cartList.innerHTML = "<li class='text-red-200 font-medium text-center'>🛒 Cart is empty.</li>";
+        totalDisplay.textContent = "";
+        return;
+      }
+
+      cart.forEach(item => {
+        cartList.innerHTML += `
+          <li class="bg-white/20 p-4 rounded-lg flex justify-between items-center">
+            <span>${item.name}</span>
+            <span>₹${item.price}</span>
+          </li>
+        `;
+        total += item.price;
+      });
+
+      totalDisplay.textContent = `Total: ₹${total}`;
+    }
+
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const preview = document.getElementById("preview");
+        preview.src = reader.result;
+        preview.classList.remove("hidden");
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function addNewProduct() {
+      const name = document.getElementById("new-name").value.trim();
+      const price = document.getElementById("new-price").value.trim();
+      const imageInput = document.getElementById("new-image");
+      const imageFile = imageInput.files[0];
+
+      if (!name || !price || !imageFile) {
+        alert("Fill in all fields and upload an image.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const newProduct = {
+          name,
+          price: Number(price),
+          image: e.target.result
+        };
+        products.push(newProduct);
+        loadProducts();
+        alert("✅ Product added!");
+        document.getElementById("new-name").value = "";
+        document.getElementById("new-price").value = "";
+        imageInput.value = "";
+        document.getElementById("preview").classList.add("hidden");
+      };
+      reader.readAsDataURL(imageFile);
+    }
+
+    function renderPaymentForm() {
+      const method = document.getElementById("payment-method").value;
+      const container = document.getElementById("payment-form");
+      container.innerHTML = "";
+
+      if (method === "upi") {
+        container.innerHTML = `
+          <label class="block">UPI ID</label>
+          <input type="text" id="upi-id" placeholder="e.g. name@paytm" class="w-full p-3 text-gray-800 rounded" />
+        `;
+      } else if (method === "card") {
+        container.innerHTML = `
+          <label class="block">Card Number</label>
+          <input type="text" id="card-number" placeholder="xxxx-xxxx-xxxx-xxxx" class="w-full p-3 text-gray-800 rounded" />
+          <label class="block">Expiry Date</label>
+          <input type="month" id="card-expiry" class="w-full p-3 text-gray-800 rounded" />
+          <label class="block">CVV</label>
+          <input type="password" id="card-cvv" placeholder="123" class="w-full p-3 text-gray-800 rounded max-w-[120px]" />
+        `;
+      } else if (method === "netbanking") {
+        container.innerHTML = `
+          <label class="block">Bank Name</label>
+          <input type="text" id="bank-name" placeholder="e.g. HDFC, SBI" class="w-full p-3 text-gray-800 rounded" />
+          <label class="block">Account Number</label>
+          <input type="text" id="account-number" placeholder="123456789" class="w-full p-3 text-gray-800 rounded" />
+        `;
+      }
+    }
+
+    function processPayment() {
+      const method = document.getElementById("payment-method").value;
+      let valid = false;
+
+      if (method === "upi") {
+        const upi = document.getElementById("upi-id")?.value.trim();
+        const upiRegex = /^[\w.-]+@(paytm|ybl|oksbi|okhdfcbank|okaxis|okicici)$/i;
+        if (upi && upiRegex.test(upi)) {
+          valid = true;
+        } else {
+          alert("❌ Invalid UPI ID. Use formats like name@paytm, name@ybl, etc.");
+          return;
+        }
+
+      } else if (method === "card") {
+        const card = document.getElementById("card-number")?.value.trim();
+        const cvv = document.getElementById("card-cvv")?.value.trim();
+        const expiry = document.getElementById("card-expiry")?.value.trim();
+        if (card?.length === 16 && /^\d+$/.test(card) && cvv?.length === 3 && expiry) {
+          valid = true;
+        } else {
+          alert("❌ Invalid Card Details.");
+          return;
+        }
+
+      } else if (method === "netbanking") {
+        const bank = document.getElementById("bank-name")?.value.trim().toUpperCase();
+        const acc = document.getElementById("account-number")?.value.trim();
+        const validBanks = ["SBI", "HDFC", "ICICI", "PNB", "AXIS", "KOTAK"];
+        if (validBanks.includes(bank) && /^\d{8,16}$/.test(acc)) {
+          valid = true;
+        } else {
+          alert("❌ Invalid NetBanking Info. Use trusted bank name and account number.");
+          return;
+        }
+      }
+
+      if (valid) {
+        alert("✅ Payment successful! Thank you for shopping with ShopEase.");
+        location.reload();
+      } else {
+        alert("❌ Please enter valid payment details.");
+      }
+    }
+  </script>
+</body>
+</html>
